@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('lesson_contents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId("lesson_id")->constrained("lessons");
+            $table->foreignId("lesson_id")->constrained("lessons")->onDelete('cascade');
             $table->enum('type', ['lear', 'quiz']);
             $table->text('content');
             $table->tinyInteger("order");
