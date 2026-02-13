@@ -6,6 +6,7 @@ use App\Models\Lesson;
 use App\Models\LessonContent;
 use App\Models\Option;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class LessonController extends Controller
@@ -178,6 +179,50 @@ class LessonController extends Controller
                 "user_answer" => $option->option_text,
                 "is_correct" => (bool) $option->is_correct
             ]
+        ], 200);
+    }
+
+    public function lessonedit(Request $request, $lesson_id){
+        //Response Invalid Token
+        $user = $request->user();
+        if(!$user) {
+            return response()->json([
+                "status" => "invalid_token",
+                "message" => "Invalid or expired token"
+            ], 401);
+        }
+
+        //Response Forbidden
+        if($user->role !== 'user') {
+            return response()->json([
+                "status" => "insufficient_permissions",
+                "message" => "Access forbidden"
+            ], 403);
+        }
+
+        //Response Not Found
+        $lesson = Lesson::find($lesson_id);
+        if(!$lesson) {
+            return response()->json([
+                "status" => "not_found",
+                "message" => "Resource not found"
+            ], 404);
+        }
+
+        //Response Success
+        DB::table('lesson_user')->updateOrInsert(
+            [
+                'user_id' => $user->id,
+                'lesson_id' => $lesson_id
+            ],
+            [
+                'completed_at' => now()
+            ]
+        );
+
+        return response()->json([
+            "status" => "success",
+            "message" => "Lesson successfully completed"
         ], 200);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -225,5 +226,52 @@ if ($validator->fails()) {
             "message" => "Course details retrieved successfully",
             "data" => $course
         ], 200);
+    }
+
+    //Resgiter to a Course
+    public function courseregister(Request $request, $course_slug){
+
+    //Response Invalid Token
+        $user = $request->user();
+        if(!$user) {
+            return response()->json([
+                "status" => "invalid_token",
+                "message" => "Invalid or expired token"
+            ], 401);
+        }
+    //Response Not Found
+        $course = Course::where('slug', $course_slug)->first();
+        if(!$course) {
+            return response()->json([
+                "status" => "not_found",
+                "message" => "Resource not found"
+            ], 404);
+        }
+
+        //Response Already Registered
+        $already = DB::table('course_user')
+            ->where('user_id', $user->id)
+            ->where('course_id', $course->id)
+            ->exists();
+
+        if ($already) {
+            return response()->json([
+                "status" => "error",
+                "message" => "The user is already registered for this course"
+            ], 400);
+
+            //Response Success
+            DB::table('course_user')->insert([
+                'user_id' => $user->id,
+                'course_id' => $course->id,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                "status" => "success",
+                "message" => "User registered successful"
+            ], 201);
+        }
     }
 }

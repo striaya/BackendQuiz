@@ -17,6 +17,7 @@ Route::middleware('auth:sanctum')->group(function() {
 Route::middleware('auth:sanctum')->group(function() {
     Route::get('/courses', [CourseController::class, 'coursegetall']);
     Route::post('/courses', [CourseController::class, 'courses']);
+    Route::post('/courses/{course_slug}/register', [CourseController::class, 'courseregister']);
     Route::get('/courses/{course_slug}', [CourseController::class, 'coursedetail']);
     Route::put('/courses/{course_slug}', [CourseController::class, 'courseedit']);
     Route::delete('/courses/{course_slug}', [CourseController::class, 'coursedelete']);
@@ -31,4 +32,5 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::post('/lessons', [LessonController::class, 'lessonadd']);
     Route::delete('/lessons/{lesson_id}', [LessonController::class, 'lessondelete']);
     Route::post('/lessons/{lesson_id}/contents/{content_id}/check', [LessonController::class, 'lessondetail']);
+    Route::put('/lessons/{lesson_id}/complete', [LessonController::class], 'lessonedit');
 });
