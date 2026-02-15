@@ -18,8 +18,8 @@ class User extends Model
         'remember_token'
     ];
 
-    public function Enrollment() {
-        return $this->hasOne(Enrollment::class, 'user_id');
+    public function enrollments() {
+        return $this->hasMany(Enrollment::class, 'user_id');
     }
 
     public function CompletedLesson() {

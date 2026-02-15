@@ -112,7 +112,7 @@ class LessonController extends Controller
 
     //Validasi
     $request->validate([
-        'option_id' => "required|exists::options,id"
+        'option_id' => "required|exists:options,id"
     ]);
 
     $option = Option::where('id', $request->option_id)
@@ -183,47 +183,39 @@ class LessonController extends Controller
     }
 
     //Complete Lesson
-    public function lessonedit(Request $request, $lesson_id){
-        //Response Invalid Token
-        $user = $request->user();
-        if(!$user) {
-            return response()->json([
-                "status" => "invalid_token",
-                "message" => "Invalid or expired token"
-            ], 401);
-        }
-
-        //Response Forbidden
-        if($user->role !== 'user') {
-            return response()->json([
-                "status" => "insufficient_permissions",
-                "message" => "Access forbidden"
-            ], 403);
-        }
-
-        //Response Not Found
-        $lesson = Lesson::find($lesson_id);
-        if(!$lesson) {
-            return response()->json([
-                "status" => "not_found",
-                "message" => "Resource not found"
-            ], 404);
-        }
-
-        //Response Success
-        DB::table('lesson_user')->updateOrInsert(
-            [
-                'user_id' => $user->id,
-                'lesson_id' => $lesson_id
-            ],
-            [
-                'completed_at' => now()
-            ]
-        );
-
+public function lessonedit(Request $request, $lesson_id)
+{
+    // Invalid Token
+    $user = $request->user();
+    if (!$user) {
         return response()->json([
-            "status" => "success",
-            "message" => "Lesson successfully completed"
-        ], 200);
+            "status" => "invalid_token",
+            "message" => "Invalid or expired token"
+        ], 401);
     }
+
+    // Forbidden
+    if ($user->role !== 'user') {
+        return response()->json([
+            "status" => "insufficient_permissions",
+            "message" => "Access forbidden"
+        ], 403);
+    }
+
+    // Not Found
+    $lesson = Lesson::find($lesson_id);
+    if (!$lesson) {
+        return response()->json([
+            "status" => "not_found",
+            "message" => "Resource not found"
+        ], 404);
+    }
+
+    // SUCCESS RESPONSE
+    return response()->json([
+        "status" => "success",
+        "message" => "Lesson successfully completed"
+    ], 200);
+}
+
 }

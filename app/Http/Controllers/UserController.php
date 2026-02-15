@@ -7,6 +7,7 @@ use App\Models\Lesson;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -122,19 +123,34 @@ class UserController extends Controller
             ], 401);
         }
 
-        $courses = Course::whereHas('users', function ($q) use ($user) {
-            $q->where('user_id', $user->id);
-        })->get();
+        $courses = DB::table('enrollments')
+            ->join('courses', 'courses.id', '=', 'enrollments.course_id')
+            ->where('enrollments.user_id', $user->id)
+            ->select(
+                'courses.id',
+                'courses.name',
+                'courses.slug',
+                'courses.description',
+                'courses.is_published',
+                'courses.created_at',
+                'courses.updated_at'
+            )
+            ->get();
 
         $progressData = [];
 
         foreach ($courses as $course) {
 
-            $completedLessons = Lesson::where('course_id', $course->id)
-                ->whereHas('users', function ($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })
-                ->select('id', 'name', 'order')
+            $completedLessons = DB::table('completed_lessons')
+                ->join('lessons', 'lessons.id', '=', 'completed_lessons.lesson_id')
+                ->join('sets', 'sets.id', '=', 'lessons.set_id')
+                ->where('completed_lessons.user_id', $user->id)
+                ->where('sets.course_id', $course->id)
+                ->select(
+                    'lessons.id',
+                    'lessons.name',
+                    'lessons.order'
+                )
                 ->get();
 
             $progressData[] = [

@@ -229,49 +229,48 @@ if ($validator->fails()) {
     }
 
     //Resgiter to a Course
-    public function courseregister(Request $request, $course_slug){
-
-    //Response Invalid Token
+        public function courseregister(Request $request, $course_slug)
+    {
         $user = $request->user();
-        if(!$user) {
+
+        if (!$user) {
             return response()->json([
                 "status" => "invalid_token",
                 "message" => "Invalid or expired token"
             ], 401);
         }
-    //Response Not Found
+
         $course = Course::where('slug', $course_slug)->first();
-        if(!$course) {
+
+        if (!$course) {
             return response()->json([
                 "status" => "not_found",
                 "message" => "Resource not found"
             ], 404);
         }
 
-        //Response Already Registered
-        $already = DB::table('course_user')
+        $exists = DB::table('enrollments')
             ->where('user_id', $user->id)
             ->where('course_id', $course->id)
             ->exists();
 
-        if ($already) {
+        if ($exists) {
             return response()->json([
                 "status" => "error",
                 "message" => "The user is already registered for this course"
             ], 400);
-
-            //Response Success
-            DB::table('course_user')->insert([
-                'user_id' => $user->id,
-                'course_id' => $course->id,
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
-
-            return response()->json([
-                "status" => "success",
-                "message" => "User registered successful"
-            ], 201);
         }
+
+        DB::table('enrollments')->insert([
+            'user_id' => $user->id,
+            'course_id' => $course->id,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        return response()->json([
+            "status" => "success",
+            "message" => "User registered successful"
+        ], 201);
     }
 }
