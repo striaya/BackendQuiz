@@ -10,8 +10,8 @@ Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function() {
+    Route::get('/users/progress', [UserController::class, 'userprogress']);
     Route::post('/logout', [UserController::class, 'logout']);
-
 });
 
 Route::middleware('auth:sanctum')->group(function() {

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Course;
+use App\Models\Lesson;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
@@ -107,4 +109,47 @@ class UserController extends Controller
                 ], 401);
             }
         }
-    } 
+        
+         // Get User Progress
+    public function userprogress(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                "status" => "invalid_token",
+                "message" => "Invalid or expired token"
+            ], 401);
+        }
+
+        $courses = Course::whereHas('users', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->get();
+
+        $progressData = [];
+
+        foreach ($courses as $course) {
+
+            $completedLessons = Lesson::where('course_id', $course->id)
+                ->whereHas('users', function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })
+                ->select('id', 'name', 'order')
+                ->get();
+
+            $progressData[] = [
+                "course" => $course,
+                "completed_lessons" => $completedLessons
+            ];
+        }
+
+        return response()->json([
+            "status" => "success",
+            "message" => "User progress retrieved successfully",
+            "data" => [
+                "progress" => $progressData
+            ]
+        ], 201);
+    }
+} 
+    

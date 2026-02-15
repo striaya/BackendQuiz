@@ -182,6 +182,7 @@ class LessonController extends Controller
         ], 200);
     }
 
+    //Complete Lesson
     public function lessonedit(Request $request, $lesson_id){
         //Response Invalid Token
         $user = $request->user();
